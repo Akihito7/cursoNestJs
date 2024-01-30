@@ -9,7 +9,7 @@ type user = {
 @Injectable()
 export class UserService {
 
-    findById(id : string): string {
+    findById(id : Number): string {
         return `Párabens Akihito, Seu id é ${id}`
     }
 
@@ -21,14 +21,23 @@ export class UserService {
         return user;
     }
 
-    async update(user: user, id : string): Promise<{}> {
+    async update(user: user, id : Number): Promise<{}> {
         return {
+            message : "Put",
             user,
             id
         }
     }
 
-    async delete(id: string): Promise<string> {
+    async updatePartial(user, id : Number) : Promise<{}> {
+        return {
+            message : "Patch",
+            user,
+            id
+        }
+    }
+
+    async delete(id: Number): Promise<Number> {
         return id
     }
 }
