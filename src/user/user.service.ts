@@ -1,4 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+import { UpdateUserDTO } from "./dtos/update-user.dto";
+import { UpdatePartialUserDTO } from "./dtos/updatePartial-user.dto";
 
 type user = {
     name: string;
@@ -9,35 +12,79 @@ type user = {
 @Injectable()
 export class UserService {
 
-    findById(id : Number): string {
-        return `Párabens Akihito, Seu id é ${id}`
+    constructor(private readonly prisma: PrismaService) { }
+
+    findById(id: number) {
+
+        return this.prisma.users.findUnique({
+            where: {
+                id
+            }
+        })
+
     }
 
-    findAll() : {} {
-        return {users : []}
+    findAll() {
+        return this.prisma.users.findMany();
     }
 
-    async create(user: user): Promise<user> {
-        return user;
+    async create({ name, email, password }): Promise<user> {
+
+        return await this.prisma.users.create({
+            data: {
+                name,
+                email,
+                password,
+            }
+        })
+
     }
 
-    async update(user: user, id : Number): Promise<{}> {
-        return {
-            message : "Put",
-            user,
-            id
-        }
+    async update({ name, email, password, birthdayAt }: UpdateUserDTO, id: number) {
+
+        if (!await this.userExists(id)) throw new NotFoundException("Usúario não encontrado em nossa base de dados");
+
+        return this.prisma.users.update({
+            data: {
+                name,
+                email,
+                password,
+                updateAt: new Date(),
+                birthdayAt: birthdayAt ? new Date(birthdayAt) : null,
+            },
+            where: { id }
+        });
+
     }
 
-    async updatePartial(user, id : Number) : Promise<{}> {
-        return {
-            message : "Patch",
-            user,
-            id
-        }
+    async updatePartial(user: UpdatePartialUserDTO, id: number): Promise<{}> {
+
+        if (!await this.userExists(id)) throw new NotFoundException("Usúario não encontrado em nossa base de dados");
+
+        return this.prisma.users.update({
+            data: {
+                ...user,
+                birthdayAt: user.birthdayAt ? new Date(user.birthdayAt) : null,
+
+            },
+            where: { id }
+        });
     }
 
-    async delete(id: Number): Promise<Number> {
-        return id
+    async delete(id: number) {
+
+        if (!await this.userExists(id)) throw new NotFoundException("Usúario não encontrado em nossa base de dados");
+
+        return this.prisma.users.delete({
+            where: { id }
+        })
+    }
+
+    async userExists(id: number) {
+
+        return this.prisma.users.findUnique({
+            where: { id }
+        })
+
     }
 }
