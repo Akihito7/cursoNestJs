@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Patch, ParseIntPipe, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Patch, ParseIntPipe, UseInterceptors, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDTO } from "./dtos/create-user.dto";
 import { UpdateUserDTO } from "./dtos/update-user.dto";
 import { UpdatePartialUserDTO } from "./dtos/updatePartial-user.dto";
 import { LogInterceptor } from "src/interceptors/log.interceptor";
+import { ParamId } from "src/decorators/param-id.decorator";
+import { AuthGuard } from "src/guards/auth.guard";
 
 
 @UseInterceptors(LogInterceptor)
@@ -11,9 +13,9 @@ import { LogInterceptor } from "src/interceptors/log.interceptor";
 export class UserController {
 
     constructor(private readonly userService: UserService) { }
-
+    
     @Get(":id")
-    findById(@Param("id", ParseIntPipe) id : number) {
+    findById(@ParamId("id") id : number) {
         return this.userService.findById(id)
     }
     
@@ -28,19 +30,18 @@ export class UserController {
     }
 
     @Put(":id")
-    async update(@Body() user, @Param("id", ParseIntPipe) id : number) {
+    async update(@Body() user, @ParamId("id") id : number) {
         return this.userService.update(user,id);
     }
 
     @Patch(":id")
-    async updatePartial(@Body() user , @Param("id", ParseIntPipe) id : number) {
+    async updatePartial(@Body() user , @ParamId("id") id : number) {
         return this.userService.updatePartial(user, id)
     }
 
-
     //Vale notar que posso pegar um parametro especifico ou pegar todos!
     @Delete(":id")
-    delete(@Param("id", ParseIntPipe) id : number){
+    delete(@ParamId("id") id : number){
         return this.userService.delete(id)
     }
 
