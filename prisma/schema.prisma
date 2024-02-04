@@ -15,4 +15,5 @@ model users {
   createdAt  DateTime  @default(now()) @db.Timestamp(0)
   updateAt   DateTime? @default(now()) @db.Timestamp(0)
   birthdayAt DateTime? @db.Date
+  roles      Int       @default(1)
 }

@@ -1,28 +1,32 @@
-import { Body, Controller, Post, Headers, UseGuards, Param, Req } from "@nestjs/common";
+import { Body, Controller, Post, Headers, UseGuards, Param, Req, Patch, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthLoginDTO } from "./dtos/auth-login.dto";
 import { AuthCreateDto } from "./dtos/auth-create.dto";
 import { AuthTokenDTO } from "./dtos/auth-token.dto";
 import { AuthGuard } from "src/guards/auth.guard";
 import { User } from "src/decorators/user.decorator";
+import { FileInterceptor } from "@nestjs/platform-express"
+import { writeFile } from "fs/promises"
+import { join } from "path"
+import { users } from "@prisma/client";
 
 @Controller("auth")
 export class AuthController {
 
-    constructor(private readonly authService : AuthService){}
+    constructor(private readonly authService: AuthService) { }
 
     @Post("login")
-    async login(@Body() {email, password} : AuthLoginDTO) {
+    async login(@Body() { email, password }: AuthLoginDTO) {
         return this.authService.login(email, password);
     }
 
     @Post("register")
-    async register(@Body() user : AuthCreateDto){
+    async register(@Body() user: AuthCreateDto) {
         return this.authService.register(user)
     }
 
     @Post("forget")
-    async forget(){
+    async forget() {
         return "esqueci minha senha"
     }
 
@@ -31,17 +35,27 @@ export class AuthController {
         return "mudar senha"
     }
 
-    
+
     @Post("check-token")
-    async checkToken(@Headers("authorization") token : AuthTokenDTO){
-   
+    async checkToken(@Headers("authorization") token: AuthTokenDTO) {
+
         return this.authService.checkToken(token)
     }
 
     @UseGuards(AuthGuard)
     @Post("me")
-    async testGuards(@User() user){
-        return {user};
+    async testGuards(@User() user: users) {
+        return { user };
+    }
+
+    @UseGuards(AuthGuard)
+    @UseInterceptors(FileInterceptor("avatar"))
+    @Patch("avatar")
+    async updateAvatar(@User() user: users, @UploadedFile() avatar: Express.Multer.File) {
+
+        const avatarName = `${user.email}-${user.id}.png`;
+        this.authService.updateAvatar(avatarName, avatar);
+        return { message: "sucess", statusCode: 200 }
     }
 
 

@@ -1,4 +1,5 @@
-import { IsDateString, IsEmail, IsOptional, IsString, IsStrongPassword } from "class-validator"
+import { IsDateString, IsEmail, IsEnum, IsOptional, IsString, IsStrongPassword } from "class-validator"
+import { Roles } from "src/decorators/roles.decorator";
 
 export class CreateUserDTO {
 
@@ -21,4 +22,8 @@ export class CreateUserDTO {
     @IsOptional()
     @IsDateString()
     birthdayAt: string
+
+    @IsOptional()
+    @IsEnum(Roles)
+    roles: number;
 }

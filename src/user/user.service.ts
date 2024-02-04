@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UpdateUserDTO } from "./dtos/update-user.dto";
 import { UpdatePartialUserDTO } from "./dtos/updatePartial-user.dto";
+import * as bcrypt from "bcrypt";
+
 
 type user = {
     name: string;
@@ -28,13 +30,17 @@ export class UserService {
         return this.prisma.users.findMany();
     }
 
-    async create({ name, email, password }): Promise<user> {
+    async create({ name, email, password, roles}): Promise<user> {
+
+        
+        password = await bcrypt.hash(password, 8);
 
         return await this.prisma.users.create({
             data: {
                 name,
                 email,
                 password,
+                roles
             }
         })
 
@@ -43,6 +49,8 @@ export class UserService {
     async update({ name, email, password, birthdayAt }: UpdateUserDTO, id: number) {
 
         if (!await this.userExists(id)) throw new NotFoundException("Usúario não encontrado em nossa base de dados");
+
+        password = await bcrypt.hash(password, 8);
 
         return this.prisma.users.update({
             data: {
@@ -60,6 +68,9 @@ export class UserService {
     async updatePartial(user: UpdatePartialUserDTO, id: number): Promise<{}> {
 
         if (!await this.userExists(id)) throw new NotFoundException("Usúario não encontrado em nossa base de dados");
+
+        if(user.password) user.password = await bcrypt.hash(user.password, 8);
+
 
         return this.prisma.users.update({
             data: {
@@ -87,4 +98,5 @@ export class UserService {
         })
 
     }
+
 }
