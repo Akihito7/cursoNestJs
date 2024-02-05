@@ -30,9 +30,9 @@ export class UserService {
         return this.prisma.users.findMany();
     }
 
-    async create({ name, email, password, roles}): Promise<user> {
+    async create({ name, email, password, roles }): Promise<user> {
 
-        
+
         password = await bcrypt.hash(password, 8);
 
         return await this.prisma.users.create({
@@ -69,7 +69,7 @@ export class UserService {
 
         if (!await this.userExists(id)) throw new NotFoundException("Usúario não encontrado em nossa base de dados");
 
-        if(user.password) user.password = await bcrypt.hash(user.password, 8);
+        if (user.password) user.password = await bcrypt.hash(user.password, 8);
 
 
         return this.prisma.users.update({
@@ -98,5 +98,6 @@ export class UserService {
         })
 
     }
+
 
 }

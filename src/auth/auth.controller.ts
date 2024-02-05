@@ -26,8 +26,8 @@ export class AuthController {
     }
 
     @Post("forget")
-    async forget() {
-        return "esqueci minha senha"
+    async forget(@Body() body : string) {
+        return this.authService.forgetPassword(body)
     }
 
     @Post("change-password")
