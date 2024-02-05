@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Headers, UseGuards, Param, Req, Patch, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { Body, Controller, Post, Headers, UseGuards, Param, Req, Patch, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileValidator, FileTypeValidator } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthLoginDTO } from "./dtos/auth-login.dto";
 import { AuthCreateDto } from "./dtos/auth-create.dto";
@@ -51,7 +51,14 @@ export class AuthController {
     @UseGuards(AuthGuard)
     @UseInterceptors(FileInterceptor("avatar"))
     @Patch("avatar")
-    async updateAvatar(@User() user: users, @UploadedFile() avatar: Express.Multer.File) {
+    async updateAvatar(@User() user: users,
+        @UploadedFile(new ParseFilePipe({
+            validators: [
+                new MaxFileSizeValidator({ maxSize: 1024 * 50 }),
+                new FileTypeValidator({ fileType: "image/jpeg" })
+            ]
+        })) avatar: Express.Multer.File
+    ) {
 
         const avatarName = `${user.email}-${user.id}.png`;
         this.authService.updateAvatar(avatarName, avatar);
